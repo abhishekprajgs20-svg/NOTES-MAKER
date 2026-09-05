@@ -23,7 +23,6 @@ CSS_CONTENT = """
   --radius: 10px;
   --shadow-sm: 0 1px 4px rgba(0,0,0,0.08);
 }
-@page { size: A4; margin: 15mm; }
 body { background: #e8e2d8; font-family: var(--font-body); color: #222; }
 .note-page { background: #fefcf6; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #dcd4c6; page-break-inside: avoid; }
 .note-header { display: flex; justify-content: space-between; border-bottom: 2px solid #e0d8ca; padding-bottom: 16px; margin-bottom: 20px; align-items: start; }
@@ -108,6 +107,9 @@ HTML_TEMPLATE = """
 <style>{{ css }}</style>
 </head>
 <body>
+{% if show_title %}
+<h1 style="text-align:center;font-family:Georgia,serif;color:#1a3a6b;margin-bottom:24px;padding:16px">&#128218; Study Notes &mdash; All {{ total_count }} Questions</h1>
+{% endif %}
 {% for q in questions %}
     {% set title = q.title %}
     {% set et = q.explanationText %}
@@ -294,6 +296,7 @@ HTML_TEMPLATE = """
         <div class="quote-box">&ldquo;{{ escape(last) }}&rdquo;<cite>&mdash; Explanation, Q{{ n }}</cite></div>
     {% endif %}
 </div>
+<div style="page-break-after:always;margin:20px 0"></div>
 {% endfor %}
 </body>
 </html>
@@ -368,7 +371,9 @@ def prepare_question_data(q):
     })
     return q_data
 
-def generate_html(questions):
+def generate_html(questions, show_title=True, total_count=None):
+    if total_count is None:
+        total_count = len(questions)
     prepared_qs = [prepare_question_data(q) for q in questions]
     template = Template(HTML_TEMPLATE)
     
@@ -376,22 +381,26 @@ def generate_html(questions):
         questions=prepared_qs,
         css=CSS_CONTENT,
         escape=escape,
-        highlight=highlight
+        highlight=highlight,
+        show_title=show_title,
+        total_count=total_count
     )
     return html_out
 
 def build_pdf(questions, output_path):
     """
     Builds a PDF from questions using chunking to avoid WeasyPrint OOMs.
-    Generates 25 questions at a time and merges using pypdf.
+    Generates 10 questions at a time and merges using pypdf.
     """
-    chunk_size = 25
+    chunk_size = 10
     merger = PdfWriter()
+    total_count = len(questions)
     
     with tempfile.TemporaryDirectory() as tmpdir:
         for i in range(0, len(questions), chunk_size):
             chunk = questions[i:i + chunk_size]
-            html_str = generate_html(chunk)
+            show_title = (i == 0)
+            html_str = generate_html(chunk, show_title=show_title, total_count=total_count)
             chunk_pdf_path = os.path.join(tmpdir, f"chunk_{i}.pdf")
             
             # Generate temporary PDF
