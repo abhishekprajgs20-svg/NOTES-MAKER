@@ -62,7 +62,7 @@ def send_generated_files(chat_id, questions, title_prefix="notes"):
         with open(html_path, 'w', encoding='utf-8') as f:
             f.write(html_content)
             
-        build_pdf(html_content, pdf_path)
+        build_pdf(questions, pdf_path)
         
         with open(pdf_path, 'rb') as f:
             bot.send_document(chat_id, f, caption=f"PDF: {title_prefix}")
