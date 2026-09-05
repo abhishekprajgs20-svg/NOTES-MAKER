@@ -109,7 +109,7 @@ HTML_TEMPLATE = """
     {% set terms = q.terms %}
     {% set concls = q.concls %}
     {% set pts = q.pts %}
-    {% set items = q.items %}
+    {% set items = q.q_items %}
     {% set revPts = q.revPts %}
     {% set last = q.last %}
     {% set secs = q.secs %}
@@ -349,7 +349,7 @@ def prepare_question_data(q):
         'terms': terms,
         'concls': concls,
         'pts': pts,
-        'items': items,
+        'q_items': items,
         'secs': secs,
         'revPts': revPts,
         'last': last,
