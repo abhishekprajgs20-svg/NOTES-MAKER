@@ -18,8 +18,15 @@ def get_session(chat_id):
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-    bot.reply_to(message, "Welcome to Notes Generator Bot! Send me one or more .txt files. When you are done, send /done.")
+    bot.reply_to(message, "Welcome to Notes Generator Bot! Send me one or more .txt files. When you are done, send /done.\nYou can send /cancel at any time to clear uploaded files and restart.")
     get_session(message.chat.id)
+
+@bot.message_handler(commands=['cancel'])
+def cancel_process(message):
+    if message.chat.id in user_data:
+        del user_data[message.chat.id]
+    get_session(message.chat.id)
+    bot.reply_to(message, "Process cancelled. All uploaded files have been cleared. Send a .txt file to start over.")
 
 @bot.message_handler(content_types=['document'])
 def handle_docs(message):
